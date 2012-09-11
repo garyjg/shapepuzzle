@@ -93,7 +93,7 @@ func (b Board) String() string {
 		grid[r] = make([]int, ncol)
 		for c := 0; c < ncol; c += 1 {
 			var mbits mask.MaskBits
-			mbits = (mask.FirstMaskBit() >> uint(r*ncol)) >> uint(c)
+			mbits = mask.FirstMaskBit().Translate(r, c)
 			for i, p := range b.placements {
 				if p.Mask() & mbits != 0 {
 					grid[r][c] = i+1
@@ -115,7 +115,6 @@ func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 	// quadrant and push it to the channel.
 	perms := s.Permutations()
 	for _, p := range perms {
-		(&p).ComputeMask()
 		// height := p.NumRows()
 		// width := p.NumCols()
 		for r := 0; r <= b.NumRows()/2; r += 1 {
