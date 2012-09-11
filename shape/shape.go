@@ -4,24 +4,13 @@ package shape
 
 import (
     "fmt"
+	"shapepuzzle/mask"
 )
-
-type MaskBits uint64
-
-
-func FirstMaskBit() MaskBits {
-	return MaskBits(0x8000000000000000)
-}
-
-
-func (mask MaskBits) String() string {
-	return fmt.Sprintf("0x%016x", uint64(mask))
-}
 
 type Shape struct {
 	id    int
 	shape [][]int
-	mask  MaskBits
+	mask  mask.MaskBits
 }
 
 func NewShape(id int, grid [][]int) Shape {
@@ -46,28 +35,28 @@ func (s Shape) String() string {
 }
 
 
-func (s *Shape) ComputeMask(nrow, ncol int) MaskBits {
+func (s *Shape) ComputeMask(nrow, ncol int) mask.MaskBits {
 
 	// Turn a 2D shape into a mask on a nrow X ncol grid.  The
 	// most-significant bit in the mask is for the upper left corner of
 	// the grid, r=0 and c=0, indexed in row major order.
 
-	mask := MaskBits(0)
+	mbits := mask.MaskBits(0)
 	for r := 0; r < s.NumRows(); r += 1 {
-		bit := FirstMaskBit() >> uint(r*ncol)
+		bit := mask.FirstMaskBit() >> uint(r*ncol)
 		for c := 0; c < s.NumCols(); c += 1 {
 			if s.shape[r][c] != 0 {
-				mask = mask | bit
+				mbits = mbits | bit
 			}
 			bit = bit >> 1
 		}
 	}
-	s.mask = mask
-	return mask
+	s.mask = mbits
+	return mbits
 }
 
 
-func (s Shape) Mask() MaskBits {
+func (s Shape) Mask() mask.MaskBits {
 	return s.mask
 }
 

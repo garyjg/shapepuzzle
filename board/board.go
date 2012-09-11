@@ -9,6 +9,7 @@ package board
 
 import (
 	"shapepuzzle/shape"
+	"shapepuzzle/mask"
 	"fmt"
 	"log"
 )
@@ -18,7 +19,7 @@ type Placement struct {
 	shape shape.Shape
 	row int
 	col int
-	mask shape.MaskBits
+	mask mask.MaskBits
 }
 
 func (p *Placement) ComputeMask(b *Board) {
@@ -30,7 +31,7 @@ func (p *Placement) ComputeMask(b *Board) {
 }
 
 
-func (p Placement) Mask() shape.MaskBits {
+func (p Placement) Mask() mask.MaskBits {
 	 return p.mask
 }
 
@@ -45,7 +46,7 @@ func NewPlacement(s *shape.Shape, b *Board, row int, col int) Placement {
 type Board struct {
 	nrows int
 	ncols int
-	mask shape.MaskBits
+	mask mask.MaskBits
 	placements []Placement
 }
 
@@ -65,7 +66,7 @@ func (b Board) NumCols() int {
 	return b.ncols
 }
 
-func (b Board) Mask() shape.MaskBits {
+func (b Board) Mask() mask.MaskBits {
 	return b.mask
 }
 
@@ -92,10 +93,10 @@ func (b Board) String() string {
 	for r := 0; r < nrow; r += 1 {
 		grid[r] = make([]int, ncol)
 		for c := 0; c < ncol; c += 1 {
-			var mask shape.MaskBits
-			mask = (shape.FirstMaskBit() >> uint(r*ncol)) >> uint(c)
+			var mbits mask.MaskBits
+			mbits = (mask.FirstMaskBit() >> uint(r*ncol)) >> uint(c)
 			for i, p := range b.placements {
-				if p.Mask() & mask != 0 {
+				if p.Mask() & mbits != 0 {
 					grid[r][c] = i+1
 					break
 				}
