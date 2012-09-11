@@ -14,7 +14,9 @@ type Shape struct {
 }
 
 func NewShape(id int, grid [][]int) Shape {
-	return Shape{ id, grid, 0 }
+	 s := Shape{ id, grid, 0 }
+	 (&s).ComputeMask()
+	 return s
 }
 
 func (s Shape) NumRows() int {
@@ -35,24 +37,10 @@ func (s Shape) String() string {
 }
 
 
-func (s *Shape) ComputeMask(nrow, ncol int) mask.MaskBits {
+func (s *Shape) ComputeMask() mask.MaskBits {
 
-	// Turn a 2D shape into a mask on a nrow X ncol grid.  The
-	// most-significant bit in the mask is for the upper left corner of
-	// the grid, r=0 and c=0, indexed in row major order.
-
-	mbits := mask.MaskBits(0)
-	for r := 0; r < s.NumRows(); r += 1 {
-		bit := mask.FirstMaskBit() >> uint(r*ncol)
-		for c := 0; c < s.NumCols(); c += 1 {
-			if s.shape[r][c] != 0 {
-				mbits = mbits | bit
-			}
-			bit = bit >> 1
-		}
-	}
-	s.mask = mbits
-	return mbits
+	s.mask = mask.ComputeMask(s.shape)
+	return s.mask
 }
 
 

@@ -128,10 +128,8 @@ func main() {
 	nshapes := len(shapes)
 	for i := 0; i < nshapes; i += 1 {
 		s := &shapes[i]
-		s.ComputeMask(b.NumRows(), b.NumCols())
 		perms := s.Permutations()
 		for _, p := range perms {
-			(&p).ComputeMask(b.NumRows(), b.NumCols())
 			log.Printf(p.String())
 		}
 	}

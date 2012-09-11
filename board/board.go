@@ -24,10 +24,9 @@ type Placement struct {
 
 func (p *Placement) ComputeMask(b *Board) {
 	 // Get the shape's mask, shift it to this row and col, and or it.
-	 log.Println("Placement.ComputeMask() from shape mask", p.shape.Mask())
-	 mask := p.shape.Mask()
-	 mask = (mask >> uint(p.row * b.NumCols())) >> uint(p.col)
-	 p.mask = mask
+	 p.mask = p.shape.Mask().Translate(p.row, p.col)
+	 log.Printf("Placement.ComputeMask(%v, %v, %v) ==> %v", 
+	 	p.shape.Mask(), p.row, p.col, p.mask)
 }
 
 
@@ -116,7 +115,7 @@ func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 	// quadrant and push it to the channel.
 	perms := s.Permutations()
 	for _, p := range perms {
-		(&p).ComputeMask(b.NumRows(), b.NumCols())
+		(&p).ComputeMask()
 		// height := p.NumRows()
 		// width := p.NumCols()
 		for r := 0; r <= b.NumRows()/2; r += 1 {
@@ -143,7 +142,6 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 	perms := s.Permutations()
 	for i := 0; i < len(perms); i += 1 {
 		s := &(perms[i])
-		s.ComputeMask(base.NumRows(), base.NumCols())
 		width := s.NumCols()
 		height := s.NumRows()
 		for r := 0; r <= base.NumRows() - height; r += 1 {
