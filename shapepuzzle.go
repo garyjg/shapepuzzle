@@ -111,7 +111,7 @@ func main() {
 	testboard := true
 	logenable := true
 
-	runtime.GOMAXPROCS(8)
+	runtime.GOMAXPROCS(1)
 	log.SetFlags(0)
 	
 	if ! logenable {
@@ -137,8 +137,8 @@ func main() {
 	if testboard {
 		tb := b
 		log.Printf("Empty board (mask=%v):\n%v", tb.Mask(), tb)
-		tb = tb.Place(board.NewPlacement(&shapes[0], &tb, 0, 0))
-		tb = tb.Place(board.NewPlacement(&shapes[1], &tb, 1, 1))
+		tb = tb.Place(board.NewPlacement(shapes[0], 0, 0))
+		tb = tb.Place(board.NewPlacement(shapes[1], 1, 1))
 		log.Println(tb)
 	}
 
@@ -147,7 +147,7 @@ func main() {
 	// Set up a channel for each shape to be placed.
 	channels := make ([]board.BoardChannel, nshapes)
 	for i := 0; i < nshapes; i +=1 {
-		channels[i] = make(board.BoardChannel, 10000)
+		channels[i] = make(board.BoardChannel, 1)
 	}
 	
 	// Chain the channels.  Generate first placements for the first shape,

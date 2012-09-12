@@ -28,6 +28,11 @@ func (s Shape) NumCols() int {
 }
 
 
+func (s Shape) ID() int {
+	return s.id
+}
+
+
 func (s Shape) String() string {
 	buf := fmt.Sprintf("Shape #%3d, mask:%v\n", s.id, s.mask)
 	for r := 0; r < s.NumRows(); r += 1 {

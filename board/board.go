@@ -22,7 +22,7 @@ type Placement struct {
 	mask mask.MaskBits
 }
 
-func (p *Placement) ComputeMask(b *Board) {
+func (p *Placement) ComputeMask() {
 	 // Get the shape's mask, shift it to this row and col, and or it.
 	 p.mask = p.shape.Mask().Translate(p.row, p.col)
 	 log.Printf("Placement.ComputeMask(%v, %v, %v) ==> %v", 
@@ -34,10 +34,9 @@ func (p Placement) Mask() mask.MaskBits {
 	 return p.mask
 }
 
-func NewPlacement(s *shape.Shape, b *Board, row int, col int) Placement {
-	 place := Placement{*s, row, col, 0}
-	 (&place).ComputeMask(b)
-	 log.Println(place.Mask())
+func NewPlacement(s shape.Shape, row int, col int) Placement {
+	 place := Placement{s, row, col, 0}
+	 (&place).ComputeMask()
 	 return place
 }
 
@@ -50,7 +49,9 @@ type Board struct {
 }
 
 func NewBoard(nrows int, ncols int) Board {
-	return Board{nrows:nrows, ncols:ncols}
+	nb := Board{nrows:nrows, ncols:ncols, mask:0}
+	nb.placements = make([]Placement, 0)
+	return nb
 }
 
 func (b Board) NumShapes() int {
@@ -73,12 +74,15 @@ func (b Board) Mask() mask.MaskBits {
 func (b Board) Place(p Placement) Board {
 
 	log.Printf("Place(%v)\n", p)
-	b.placements = append(b.placements, p)
+	nb := b
+	nb.placements = make([]Placement, len(b.placements), len(b.placements)+1)
+	copy(nb.placements, b.placements)
+	nb.placements = append(nb.placements, p)
 	log.Printf("adding placement %d mask %v to board mask %v\n", 
-			   len(b.placements), p.Mask(), b.Mask())
-	b.mask = b.mask | p.Mask()
-	log.Printf("result: %v\n", b.Mask())
-	return b
+			   len(nb.placements), p.Mask(), nb.Mask())
+	nb.mask = nb.mask | p.Mask()
+	log.Printf("result: %v\n", nb.Mask())
+	return nb
 }
 
 
@@ -87,16 +91,16 @@ func (b Board) String() string {
 	// Fill the spots on the board with each shape's ID.
 	nrow := b.NumRows()
 	ncol := b.NumCols()
-	var buf string
+	buf := fmt.Sprintf("%d shapes.\n", len(b.placements))
 	grid := make([][]int, nrow)
 	for r := 0; r < nrow; r += 1 {
 		grid[r] = make([]int, ncol)
 		for c := 0; c < ncol; c += 1 {
 			var mbits mask.MaskBits
 			mbits = mask.FirstMaskBit().Translate(r, c)
-			for i, p := range b.placements {
+			for _, p := range b.placements {
 				if p.Mask() & mbits != 0 {
-					grid[r][c] = i+1
+					grid[r][c] = p.shape.ID()
 					break
 				}
 			}
@@ -115,15 +119,14 @@ func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 	// quadrant and push it to the channel.
 	perms := s.Permutations()
 	for _, p := range perms {
-		// height := p.NumRows()
-		// width := p.NumCols()
-		for r := 0; r <= b.NumRows()/2; r += 1 {
-			for c := 0; c <= b.NumCols()/2; c += 1 {
-				place := NewPlacement(&p, &b, r, c)
+		height := p.NumRows()
+		width := p.NumCols()
+		for r := 0; r <= b.NumRows()/2 && r <= b.NumRows() - height; r += 1 {
+			for c := 0; c <= b.NumCols()/2 && c <= b.NumCols() - width; c += 1 {
+				place := NewPlacement(p, r, c)
 				log.Printf("Placement mask => %v\n", place.Mask())
 				nb := b.Place(place)
-				log.Println("Generating first placement:\n", nb)
-				log.Println("New board mask: %v\n", b.Mask())
+				log.Printf("Generating first placement:\n%v", nb)
 				bc <- nb
 			}
 		}
@@ -145,7 +148,7 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 		height := s.NumRows()
 		for r := 0; r <= base.NumRows() - height; r += 1 {
 			for c := 0; c <= base.NumCols() - width; c += 1 {
-				place := NewPlacement(s, &base, r, c)
+				place := NewPlacement(*s, r, c)
 				placements = append(placements, place)
 			}
 		}
@@ -154,7 +157,10 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 	for b := range boards {
 		for _, place := range placements {
 			if b.Mask() & place.Mask() == 0 {
-				moves <- b.Place(place)
+				log.Printf("Received board:\n%v", b)
+			    nb := b.Place(place)
+				log.Printf("Found next placement:\n%v", nb)
+				moves <- nb
 			}
 		}
 	}
