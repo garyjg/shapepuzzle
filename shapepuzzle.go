@@ -108,10 +108,10 @@ func (nw NullWriter) Write(b []byte) (n int, err error) {
 
 func main() {
 
-	testboard := true
-	logenable := true
+	testboard := false
+	logenable := false
 
-	runtime.GOMAXPROCS(1)
+	runtime.GOMAXPROCS(8)
 	log.SetFlags(0)
 	
 	if ! logenable {
@@ -147,7 +147,7 @@ func main() {
 	// Set up a channel for each shape to be placed.
 	channels := make ([]board.BoardChannel, nshapes)
 	for i := 0; i < nshapes; i +=1 {
-		channels[i] = make(board.BoardChannel, 1)
+		channels[i] = make(board.BoardChannel, 10000)
 	}
 	
 	// Chain the channels.  Generate first placements for the first shape,
