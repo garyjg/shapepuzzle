@@ -42,6 +42,34 @@ func ComputeMask(grid [][]int) MaskBits {
 
 
 func (mask MaskBits) Translate(row int, col int) MaskBits {
-	 return (mask >> uint(row * 8)) >> uint(col)
+
+	// It is possible to translate a mask past the edges (positive and
+	// negative), in which it should not wrap to the next row but be
+	// truncated instead.
+
+	if row < 0 {
+	    mask = mask << uint(-row * 8)
+		row = 0
+	} else {
+	    mask = mask >> uint(row * 8)
+	}
+
+	// Truncating columns means ANDing each byte before shifting it to the
+	// right column.
+    blank := uint64(0)
+	if col < 0 {
+		for i := 0; i < 8; i += 1 {
+		    blank = (blank << 8) + (0xff >> uint(-col))
+		}
+		mask = mask & MaskBits(blank)
+		mask = mask << uint(-col)
+	} else {
+		for i := 0; i < 8; i += 1 {
+		    blank = (blank << 8) + ((0xff << uint(col)) & 0xff)
+		}
+		mask = mask & MaskBits(blank)
+		mask = mask >> uint(col)
+	}   
+	return mask
 }
 

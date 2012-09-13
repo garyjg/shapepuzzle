@@ -111,6 +111,48 @@ func (b Board) String() string {
 }
 
 
+// Given a set of shapes, a board 8x8, and their permutations and
+// translations on the board, find the combination which covers every spot
+// on the board.  The board state is represented as a 64-bit mask, and
+// shape placements can be converted to a mask on that board to quickly
+// determine if that placement is valid, ie, it does not collied any other
+// placements.
+// 
+// As soon as a board state is found on which a piece cannot be placed,
+// that board state is discarded and not propagated.  Therefore not all
+// pieces will need to be attempted before a placement sequence is
+// recognized as a dead end.
+// 
+// Because the first placement is symmetrical across the four quadrants of
+// the board, it only needs to generate placements in one quadrant.  That
+// at least reduces the search space by close to a fourth.
+
+// This might be optimized by immediately pruning board states which cannot
+// yield solutions because there are gaps which are too small for any shape.
+// These gaps can be found by matching against a set of masks:
+//
+//  A square with one space inside, shifted to all positions on the board.
+//  A space on the edge surrounded by filled positions.
+//  A rectangle with two spaces inside.
+//  A rectangle on the edge.
+//  Corner masks which only fit one, two, three, or four spaces.
+// 
+// [ [ 0, 1, 0 ], [ 1, 0, 1 ], [ 0, 1, 0 ] ]
+// 
+// The corners do not need to be filled in, only the edges.  The point is
+// that empty spaces are surrounded on all sides by either filled spaces or
+// the border.
+// 
+// Basically, given a rectangle with 1, 2, 3, or 4 empty spaces inside, AND
+// that filled shape with the board, then OR the mask with the inside
+// spaces removed.  If the result is not equal to the filled mask, then
+// there are gaps which cannot fit a shape.
+
+// Also, the masks for a shape placement do not change depending upon the
+// incoming board, so really the placements can all be computed ahead of
+// time and then the masks scanned for one that fits on the incoming board.
+
+
 type BoardChannel chan Board
 
 func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
@@ -165,4 +207,24 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 		}
 	}
 	close(moves)
+}
+
+
+
+// Given a board with a particular size, generate all the masks which if
+// they match a board should cause the board to be rejected as a potential
+// solution.
+
+func gapMasks(b Board) []mask.MaskBits {
+
+	shapes := [][][]int { { 
+		{0,1,0}, {1,2,1}, {0,1,0} }, {
+		{0,1,1,0}, {1,2,2,1}, {0,1,1,0} }, {
+		{0,1,1,1,0}, {1,2,2,2,1}, {0,1,1,1,0} }, {
+		{0,1,1,1,1,0}, {1,2,2,2,2,1}, {0,1,1,1,1,0} }, {
+		{0,1,1,0}, {1,2,2,1}, {1,2,2,1}, {0,1,1,0} }, {
+		{0,1,1,0}, {1,2,2,1}, {0,1,2,1}, {0,1,1,1} } }
+
+
+
 }
