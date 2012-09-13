@@ -210,7 +210,43 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 }
 
 
+// To search the solution space, each piece gets its own goroutine in which
+// it generates all the available moves on the current board state.  It
+// puts each valid move and the resulting board state onto its output
+// channel.  The goroutines for each piece can be chained together so that
+// if the final piece in the chain puts a new board state on its output
+// channel, then that must be a solution to the puzzle.
+// 
 
+
+func (b Board) Solve(shapes []shape.Shape) (Board, bool) {
+
+	nshapes := len(shapes)
+
+	// Set up a channel for each shape to be placed.
+	channels := make ([]BoardChannel, nshapes)
+	for i := 0; i < nshapes; i +=1 {
+		channels[i] = make(BoardChannel, 10000)
+	}
+	
+	// Chain the channels.  Generate first placements for the first shape,
+	// and tell it to put those new boards on its channel.
+	go FirstPlacements(shapes[0], b, channels[0])
+
+	for i := 1; i < nshapes; i += 1 {
+		go NextPlacements(shapes[i], b, channels[i-1], channels[i])
+    }
+
+	// Finally listen for a solution (or not) to be pushed to the last
+	// channel.
+
+	b, ok := <-channels[nshapes-1]
+	return b, ok
+}
+
+
+
+/*
 // Given a board with a particular size, generate all the masks which if
 // they match a board should cause the board to be rejected as a potential
 // solution.
@@ -228,3 +264,4 @@ func gapMasks(b Board) []mask.MaskBits {
 
 
 }
+*/
