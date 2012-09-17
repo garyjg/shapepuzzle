@@ -60,15 +60,11 @@ func (b Board) RegionMask() mask.MaskBits {
 
 func (b Board) Place(p shape.Shape) Board {
 
-	log.Printf("Place(%v)\n", p)
 	nb := b
 	nb.placements = make([]shape.Shape, len(b.placements), len(b.placements)+1)
 	copy(nb.placements, b.placements)
 	nb.placements = append(nb.placements, p)
-	log.Printf("adding placement %d mask %v to board mask %v\n", 
-			   len(nb.placements), p.Mask(), nb.Mask())
 	nb.mask = nb.mask | p.Mask()
-	log.Printf("result: %v\n", nb.Mask())
 	return nb
 }
 
@@ -149,6 +145,7 @@ func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 	// patterns.
 	rejects := GapShapes(b)
 	perms := s.Permutations()
+	ngen, nrej := 0, 0
 	for _, p := range perms {
 		height := p.NumRows()
 		width := p.NumCols()
@@ -157,13 +154,20 @@ func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 				place := p.Translate(r, c)
 				nb := b.Place(place)
 				if !RejectBoard(nb, rejects) {
-				    log.Printf("Placement mask => %v\n", place.Mask())
-					log.Printf("Generating first placement:\n%v", nb)
+					log.Printf("Generating first placement (S#%d):\n%v", 
+							   place.ID(), nb)
 					bc <- nb
+					ngen += 1
+				} else {
+				    log.Printf("Rejected first placement (S#%d):\n%v", 
+							   place.ID(), nb)
+					nrej += 1
 				}
 			}
 		}
 	}
+	log.Printf("Total first placements (S#%d): %d generated, %d rejected.", 
+			   s.ID(), ngen, nrej)
 	close(bc)
 }
 
@@ -185,8 +189,12 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 				place := (*s).Translate(r, c)
 				// If this shape at this place on a blank board would be
 				// rejected, then reject it for any board.
-				if !RejectBoard(base.Place(place), rejects) {
+				nb := base.Place(place)
+				if !RejectBoard(nb, rejects) {
 					placements = append(placements, place)
+				} else {
+				  	log.Printf("Rejected prepared placement (S#%d):\n%v", 
+								place.ID(), nb)
 				}
 			}
 		}
@@ -198,8 +206,7 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 			if b.Mask() & place.Mask() == 0 {
 			    nb := b.Place(place)
 				if ! RejectBoard(nb, rejects) {
-				    log.Printf("Received board:\n%v", b)
-					log.Printf("Found next placement:\n%v", nb)
+					log.Printf("Generating placement (S#%d):\n%v", place.ID(), nb)
 					moves <- nb
 				}
 			}
