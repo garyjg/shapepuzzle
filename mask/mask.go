@@ -25,19 +25,23 @@ func (mask MaskBits) String() string {
 // starts at a new byte, no matter how many columns.  That way the mask
 // is independent of the board size and can be stashed with the shape.
 
-func ComputeMask(grid [][]int) MaskBits {
+func ComputeMask(grid [][]int) (MaskBits, MaskBits) {
 
 	mbits := MaskBits(0)
+	gapbits := MaskBits(0)
 	for r := 0; r < len(grid); r += 1 {
 		bit := FirstMaskBit() >> uint(r * 8)
 		for c := 0; c < len(grid[0]); c += 1 {
 			if grid[r][c] != 0 {
 				mbits = mbits | bit
 			}
+			if grid[r][c] == 2 {
+			    gapbits = gapbits | bit
+			}
 			bit = bit >> 1
 		}
 	}
-	return mbits
+	return mbits, gapbits
 }
 
 

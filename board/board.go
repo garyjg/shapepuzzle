@@ -246,14 +246,29 @@ func (b Board) Solve(shapes []shape.Shape) (Board, bool) {
 
 
 
-/*
+// See if the gap mask defined in this shape indicates that this board
+// state should be rejected as a possible solution.
+
+func rejectGap(b Board, s shape.Shape) bool {
+
+    // First see if the board matches the gap outline.
+	if s.OutlineMask() & b.Mask() != s.OutlineMask() {
+	    return false
+	}
+	if s.GapMask() & b.Mask() == s.GapMask() {
+	    return false
+	}
+	return true
+}
+
+
 // Given a board with a particular size, generate all the masks which if
 // they match a board should cause the board to be rejected as a potential
 // solution.
 
-func gapMasks(b Board) []mask.MaskBits {
+func gapMasks(b Board) []shape.Shape {
 
-	shapes := [][][]int { { 
+	grids := [][][]int { { 
 		{0,1,0}, {1,2,1}, {0,1,0} }, {
 		{0,1,1,0}, {1,2,2,1}, {0,1,1,0} }, {
 		{0,1,1,1,0}, {1,2,2,2,1}, {0,1,1,1,0} }, {
@@ -261,7 +276,21 @@ func gapMasks(b Board) []mask.MaskBits {
 		{0,1,1,0}, {1,2,2,1}, {1,2,2,1}, {0,1,1,0} }, {
 		{0,1,1,0}, {1,2,2,1}, {0,1,2,1}, {0,1,1,1} } }
 
-
-
+	shapes := []shape.Shape{}
+	for id, g := range grids {
+		s := shape.NewShape(id+100, g)
+		perms := s.Permutations()
+		for i := 0; i < len(perms); i += 1 {
+			s := &(perms[i])
+			width := s.NumCols()
+			height := s.NumRows()
+			for r := -1; r <= b.NumRows() - height + 1; r += 1 {
+				for c := -1; c <= b.NumCols() - width + 1; c += 1 {
+					shapes = append(shapes, s.Translate(r, c))
+				}
+			}
+		}
+	}
+	return shapes
 }
-*/
+

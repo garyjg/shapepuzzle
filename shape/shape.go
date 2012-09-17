@@ -11,10 +11,13 @@ type Shape struct {
 	id    int
 	shape [][]int
 	mask  mask.MaskBits
+	gaps  mask.MaskBits
+	row	  int
+	col	  int
 }
 
 func NewShape(id int, grid [][]int) Shape {
-	 s := Shape{ id, grid, 0 }
+	 s := Shape{ id, grid, 0, 0, 0, 0 }
 	 (&s).ComputeMask()
 	 return s
 }
@@ -44,13 +47,32 @@ func (s Shape) String() string {
 
 func (s *Shape) ComputeMask() mask.MaskBits {
 
-	s.mask = mask.ComputeMask(s.shape)
+	s.mask, s.gaps = mask.ComputeMask(s.shape)
 	return s.mask
 }
 
 
 func (s Shape) Mask() mask.MaskBits {
 	return s.mask
+}
+
+
+func (s Shape) GapMask() mask.MaskBits {
+	return s.gaps
+}
+
+
+func (s Shape) OutlineMask() mask.MaskBits {
+    return s.mask & (^ s.gaps)
+}
+
+
+func (s Shape) Translate(r int, c int) (Shape) {
+	s.row = s.row + r
+	s.col = s.col + c
+	s.mask = s.mask.Translate(r, c)
+	s.gaps = s.gaps.Translate(r, c)
+	return s
 }
 
 
