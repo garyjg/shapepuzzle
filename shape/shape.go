@@ -22,6 +22,17 @@ func NewShape(id int, grid [][]int) Shape {
 	 return s
 }
 
+
+func MakeShapes(grids [][][]int) []Shape {
+	shapes := []Shape{}
+	for id, grid := range grids {
+		s := NewShape(id+1, grid)
+		shapes = append(shapes, s)
+	}
+	return shapes
+}
+
+
 func (s Shape) NumRows() int {
 	return len(s.shape)
 }
@@ -49,6 +60,13 @@ func (s *Shape) ComputeMask() mask.MaskBits {
 
 	s.mask, s.gaps = mask.ComputeMask(s.shape)
 	return s.mask
+}
+
+
+func (s Shape) Clip(region mask.MaskBits) Shape {
+	s.mask = s.mask & region
+	s.gaps = s.mask & region
+	return s
 }
 
 

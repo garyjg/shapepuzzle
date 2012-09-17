@@ -27,12 +27,7 @@ func getShapes() []shape.Shape {
 			{0, 1, 1}, {1, 1, 0}, {1, 0, 0}}, {
 			{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 1, 1}}, {
 			{1, 0, 0, 0}, {1, 1, 1, 1}, {1, 0, 0, 0}}}
-	shapes := []shape.Shape{}
-	for id, grid := range grids {
-		s := shape.NewShape(id+1, grid)
-		shapes = append(shapes, s)
-	}
-	return shapes
+	return shape.MakeShapes(grids)
 }
 
 type NullWriter struct {

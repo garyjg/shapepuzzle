@@ -45,8 +45,8 @@ func TestPlacements(t *testing.T) {
 	tb := board.NewBoard(5, 5)
 	shapes := testShapes()
 	log.Printf("Empty board (mask=%v):\n%v", tb.Mask(), tb)
-	tb = tb.Place(board.NewPlacement(shapes[0], 0, 0))
-	tb = tb.Place(board.NewPlacement(shapes[1], 1, 1))
+	tb = tb.Place(shapes[0].Translate(0, 0))
+	tb = tb.Place(shapes[1].Translate(1, 1))
 	log.Println(tb)
 }
 

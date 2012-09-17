@@ -15,42 +15,16 @@ import (
 )
 
 
-type Placement struct {
-	shape shape.Shape
-	row int
-	col int
-	mask mask.MaskBits
-}
-
-func (p *Placement) ComputeMask() {
-	 // Get the shape's mask, shift it to this row and col, and or it.
-	 p.mask = p.shape.Mask().Translate(p.row, p.col)
-	 log.Printf("Placement.ComputeMask(%v, %v, %v) ==> %v", 
-	 	p.shape.Mask(), p.row, p.col, p.mask)
-}
-
-
-func (p Placement) Mask() mask.MaskBits {
-	 return p.mask
-}
-
-func NewPlacement(s shape.Shape, row int, col int) Placement {
-	 place := Placement{s, row, col, 0}
-	 (&place).ComputeMask()
-	 return place
-}
-
-
 type Board struct {
 	nrows int
 	ncols int
 	mask mask.MaskBits
-	placements []Placement
+	placements []shape.Shape
 }
 
 func NewBoard(nrows int, ncols int) Board {
 	nb := Board{nrows:nrows, ncols:ncols, mask:0}
-	nb.placements = make([]Placement, 0)
+	nb.placements = make([]shape.Shape, 0)
 	return nb
 }
 
@@ -71,11 +45,24 @@ func (b Board) Mask() mask.MaskBits {
 }
 
 
-func (b Board) Place(p Placement) Board {
+func (b Board) RegionMask() mask.MaskBits {
+	cbits := mask.MaskBits(0)
+	for c := 0; c < b.NumCols(); c += 1 {
+	    cbits = mask.FirstMaskBit() | (cbits >> 1)
+	}
+	mbits := mask.MaskBits(0)
+	for r := 0; r < b.NumRows(); r += 1 {
+		mbits = (mbits >> 8) | cbits
+	}
+	return mbits
+}
+
+
+func (b Board) Place(p shape.Shape) Board {
 
 	log.Printf("Place(%v)\n", p)
 	nb := b
-	nb.placements = make([]Placement, len(b.placements), len(b.placements)+1)
+	nb.placements = make([]shape.Shape, len(b.placements), len(b.placements)+1)
 	copy(nb.placements, b.placements)
 	nb.placements = append(nb.placements, p)
 	log.Printf("adding placement %d mask %v to board mask %v\n", 
@@ -100,7 +87,7 @@ func (b Board) String() string {
 			mbits = mask.FirstMaskBit().Translate(r, c)
 			for _, p := range b.placements {
 				if p.Mask() & mbits != 0 {
-					grid[r][c] = p.shape.ID()
+					grid[r][c] = p.ID()
 					break
 				}
 			}
@@ -158,18 +145,22 @@ type BoardChannel chan Board
 func FirstPlacements(s shape.Shape, b Board, bc BoardChannel) {
 
 	// Just generate every permutation of the shape at every position in the
-	// quadrant and push it to the channel.
+	// quadrant and push it to the channel, unless it matches one of the reject
+	// patterns.
+	rejects := GapShapes(b)
 	perms := s.Permutations()
 	for _, p := range perms {
 		height := p.NumRows()
 		width := p.NumCols()
 		for r := 0; r <= b.NumRows()/2 && r <= b.NumRows() - height; r += 1 {
 			for c := 0; c <= b.NumCols()/2 && c <= b.NumCols() - width; c += 1 {
-				place := NewPlacement(p, r, c)
-				log.Printf("Placement mask => %v\n", place.Mask())
+				place := p.Translate(r, c)
 				nb := b.Place(place)
-				log.Printf("Generating first placement:\n%v", nb)
-				bc <- nb
+				if !RejectBoard(nb, rejects) {
+				    log.Printf("Placement mask => %v\n", place.Mask())
+					log.Printf("Generating first placement:\n%v", nb)
+					bc <- nb
+				}
 			}
 		}
 	}
@@ -181,7 +172,8 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 					moves BoardChannel) {
 
 	// Generate all possible board masks for placing this shape.
-	placements := make([]Placement, 100)
+	placements := make([]shape.Shape, 100)
+	rejects := GapShapes(base)
 	placements = placements[0:0]
 	perms := s.Permutations()
 	for i := 0; i < len(perms); i += 1 {
@@ -190,19 +182,26 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 		height := s.NumRows()
 		for r := 0; r <= base.NumRows() - height; r += 1 {
 			for c := 0; c <= base.NumCols() - width; c += 1 {
-				place := NewPlacement(*s, r, c)
-				placements = append(placements, place)
+				place := (*s).Translate(r, c)
+				// If this shape at this place on a blank board would be
+				// rejected, then reject it for any board.
+				if !RejectBoard(base.Place(place), rejects) {
+					placements = append(placements, place)
+				}
 			}
 		}
 	}
-	// For each input board, find all the placements which fit.
+	// For each input board, find all the placements which fit, but reject the
+	// ones known to not have room for future placements.
 	for b := range boards {
 		for _, place := range placements {
 			if b.Mask() & place.Mask() == 0 {
-				log.Printf("Received board:\n%v", b)
 			    nb := b.Place(place)
-				log.Printf("Found next placement:\n%v", nb)
-				moves <- nb
+				if ! RejectBoard(nb, rejects) {
+				    log.Printf("Received board:\n%v", b)
+					log.Printf("Found next placement:\n%v", nb)
+					moves <- nb
+				}
 			}
 		}
 	}
@@ -225,7 +224,7 @@ func (b Board) Solve(shapes []shape.Shape) (Board, bool) {
 
 	// Set up a channel for each shape to be placed.
 	channels := make ([]BoardChannel, nshapes)
-	for i := 0; i < nshapes; i +=1 {
+	for i := 0; i < nshapes; i += 1 {
 		channels[i] = make(BoardChannel, 10000)
 	}
 	
@@ -262,20 +261,35 @@ func rejectGap(b Board, s shape.Shape) bool {
 }
 
 
+func RejectBoard(b Board, patterns []shape.Shape) bool {
+    for _, s := range patterns {
+		if rejectGap(b, s) {
+		    return true
+		}
+	}
+	return false
+}
+
+
 // Given a board with a particular size, generate all the masks which if
 // they match a board should cause the board to be rejected as a potential
 // solution.
 
-func gapMasks(b Board) []shape.Shape {
+func GapShapes(b Board) []shape.Shape {
 
 	grids := [][][]int { { 
 		{0,1,0}, {1,2,1}, {0,1,0} }, {
 		{0,1,1,0}, {1,2,2,1}, {0,1,1,0} }, {
+		{0,1,1,0}, {1,2,2,1}, {1,2,2,1}, {0,1,1,0} }, {
 		{0,1,1,1,0}, {1,2,2,2,1}, {0,1,1,1,0} }, {
 		{0,1,1,1,1,0}, {1,2,2,2,2,1}, {0,1,1,1,1,0} }, {
 		{0,1,1,0}, {1,2,2,1}, {1,2,2,1}, {0,1,1,0} }, {
-		{0,1,1,0}, {1,2,2,1}, {0,1,2,1}, {0,1,1,1} } }
+		{0,1,1,0},
+		{1,2,2,1},
+		{0,1,2,1},
+		{0,0,1,0} } }
 
+	region := b.RegionMask()
 	shapes := []shape.Shape{}
 	for id, g := range grids {
 		s := shape.NewShape(id+100, g)
@@ -286,7 +300,7 @@ func gapMasks(b Board) []shape.Shape {
 			height := s.NumRows()
 			for r := -1; r <= b.NumRows() - height + 1; r += 1 {
 				for c := -1; c <= b.NumCols() - width + 1; c += 1 {
-					shapes = append(shapes, s.Translate(r, c))
+					shapes = append(shapes, s.Translate(r, c).Clip(region))
 				}
 			}
 		}
