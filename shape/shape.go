@@ -65,7 +65,7 @@ func (s *Shape) ComputeMask() mask.MaskBits {
 
 func (s Shape) Clip(region mask.MaskBits) Shape {
 	s.mask = s.mask & region
-	s.gaps = s.mask & region
+	s.gaps = s.gaps & region
 	return s
 }
 

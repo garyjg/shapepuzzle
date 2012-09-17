@@ -261,13 +261,19 @@ func rejectGap(b Board, s shape.Shape) bool {
 }
 
 
-func RejectBoard(b Board, patterns []shape.Shape) bool {
-    for _, s := range patterns {
+func searchGap(b Board, patterns []shape.Shape) (int) {
+    for i, s := range patterns {
 		if rejectGap(b, s) {
-		    return true
+		    return i
 		}
 	}
-	return false
+	return -1
+}
+
+
+
+func RejectBoard(b Board, patterns []shape.Shape) bool {
+	return searchGap(b, patterns) >= 0
 }
 
 

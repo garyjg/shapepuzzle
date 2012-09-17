@@ -29,17 +29,18 @@ func testShapes() []shape.Shape {
 }
 
 
-func checkReject(t *testing.T, b Board, rejects []shape.Shape, result bool) {
-	reject := RejectBoard(b, rejects)
-	if ! reject && result {
+func checkReject(t *testing.T, b Board, rejects []shape.Shape, expected bool) {
+	slot := searchGap(b, rejects)
+	reject := (slot >= 0)
+	if ! reject && expected {
 	    t.Errorf("Board should be rejected: %v", b)
-	} else if reject && ! result {
-	    t.Errorf("Board should NOT be rejected: %v", b)
+	} else if reject && ! expected {
+	    t.Errorf("Board should NOT be rejected: %v\n%v", b, rejects[slot])
 	}
 }
 
 
-func TestNewBoard(t *testing.T) {
+func TestRejectBoard(t *testing.T) {
 
     b := NewBoard(8, 8)
     rejects := GapShapes(b)
