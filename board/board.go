@@ -74,10 +74,11 @@ func (b Board) String() string {
 	// Fill the spots on the board with each shape's ID.
 	nrow := b.NumRows()
 	ncol := b.NumCols()
-	buf := fmt.Sprintf("%d shapes.\n", len(b.placements))
+	buf := ""
 	grid := make([][]int, nrow)
 	for r := 0; r < nrow; r += 1 {
 		grid[r] = make([]int, ncol)
+		buf += "["
 		for c := 0; c < ncol; c += 1 {
 			var mbits mask.MaskBits
 			mbits = mask.FirstMaskBit().Translate(r, c)
@@ -87,8 +88,9 @@ func (b Board) String() string {
 					break
 				}
 			}
+			buf += fmt.Sprintf(" %2d", grid[r][c])
 		}
-		buf = buf + fmt.Sprintf("%v\n", grid[r])
+		buf += "]\n"
 	}
 	return buf
 }
@@ -225,7 +227,7 @@ func NextPlacements(s shape.Shape, base Board, boards BoardChannel,
 // 
 
 
-func (b Board) Solve(shapes []shape.Shape) (Board, bool) {
+func (b Board) Solve(shapes []shape.Shape) (BoardChannel) {
 
 	nshapes := len(shapes)
 
@@ -246,8 +248,7 @@ func (b Board) Solve(shapes []shape.Shape) (Board, bool) {
 	// Finally listen for a solution (or not) to be pushed to the last
 	// channel.
 
-	b, ok := <-channels[nshapes-1]
-	return b, ok
+	return channels[nshapes-1]
 }
 
 

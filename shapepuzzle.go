@@ -39,7 +39,7 @@ func (nw NullWriter) Write(b []byte) (n int, err error) {
 
 func main() {
 
-	logenable := true
+	logenable := false
 
 	runtime.GOMAXPROCS(8)
 	log.SetFlags(0)
@@ -62,12 +62,18 @@ func main() {
 
 	fmt.Printf("Initial board:\n%v", b)
 
-	b, ok := b.Solve(shapes)
-	if ok {
+	bc := b.Solve(shapes)
+	nfound := 0
+	for b := range bc {
 		fmt.Println("Solution found.")
 		fmt.Println(b)
-	} else {
-		fmt.Println("No solution found.")
+		nfound += 1
 	}
-
+	if nfound == 0 {
+		fmt.Println("No solution found.")
+	} else if nfound == 1 {
+	  	fmt.Println("One solution found.")
+	} else {
+	  	fmt.Println("%d solutions found.", nfound)
+	}
 }

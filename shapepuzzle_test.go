@@ -31,7 +31,8 @@ func TestSolution(t *testing.T) {
 	b := board.NewBoard(5, 5)
 	shapes := testShapes()
 
-	b, ok := b.Solve(shapes)
+	bc := b.Solve(shapes)
+	b, ok := <-bc	
     if ! ok {
 	    t.Errorf("No solution found!")
 	}
