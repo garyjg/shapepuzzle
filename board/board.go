@@ -100,8 +100,8 @@ func (b Board) String() string {
 // translations on the board, find the combination which covers every spot
 // on the board.  The board state is represented as a 64-bit mask, and
 // shape placements can be converted to a mask on that board to quickly
-// determine if that placement is valid, ie, it does not collied any other
-// placements.
+// determine if that placement is valid, ie, it does not collide with any
+// other placements.
 // 
 // As soon as a board state is found on which a piece cannot be placed,
 // that board state is discarded and not propagated.  Therefore not all
