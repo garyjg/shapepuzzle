@@ -1,6 +1,6 @@
 
 Shapepuzzle is a Go program for solving a puzzle where interlocking shapes
-must be placed to fill a square board.  The shapes are defined as 3x3
+must be placed to fill a square board.  The shapes are defined as 2D
 bitmask arrays which can be rotated and flipped and placed on the board by
 OR'ing the bits.  When all the shapes have been placed without colliding
 with other shape placements, the puzzle is solved.
