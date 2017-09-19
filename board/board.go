@@ -1,10 +1,9 @@
 // -*- tab-width: 4; -*-
 
+// Package board contains the Board structure and methods for accumulating
+// shape placements on a puzzle grid.
+//
 package board
-
-// A Board is a number of rows and columns, a set of shape placements, and
-// a current mask which provides a fast way to check if a new placement
-// fits.
 
 
 import (
@@ -15,10 +14,14 @@ import (
 )
 
 
+// Board is a number of rows and columns, a set of shape placements, and
+// a current mask which provides a fast way to check if a new placement
+// fits.
+//
 type Board struct {
 	nrows int
 	ncols int
-	mask mask.MaskBits
+	mask mask.Bits
 	placements []shape.Shape
 }
 
@@ -40,17 +43,17 @@ func (b Board) NumCols() int {
 	return b.ncols
 }
 
-func (b Board) Mask() mask.MaskBits {
+func (b Board) Mask() mask.Bits {
 	return b.mask
 }
 
 
-func (b Board) RegionMask() mask.MaskBits {
-	cbits := mask.MaskBits(0)
+func (b Board) RegionMask() mask.Bits {
+	cbits := mask.Bits(0)
 	for c := 0; c < b.NumCols(); c += 1 {
-	    cbits = mask.FirstMaskBit() | (cbits >> 1)
+	    cbits = mask.FirstBit() | (cbits >> 1)
 	}
-	mbits := mask.MaskBits(0)
+	mbits := mask.Bits(0)
 	for r := 0; r < b.NumRows(); r += 1 {
 		mbits = (mbits >> 8) | cbits
 	}
@@ -80,8 +83,8 @@ func (b Board) String() string {
 		grid[r] = make([]int, ncol)
 		buf += "["
 		for c := 0; c < ncol; c += 1 {
-			var mbits mask.MaskBits
-			mbits = mask.FirstMaskBit().Translate(r, c)
+			var mbits mask.Bits
+			mbits = mask.FirstBit().Translate(r, c)
 			for _, p := range b.placements {
 				if p.Mask() & mbits != 0 {
 					grid[r][c] = p.ID()

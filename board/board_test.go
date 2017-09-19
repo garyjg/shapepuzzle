@@ -11,10 +11,10 @@ import (
 
 func TestRegionMask(t *testing.T) {
 
-	if NewBoard(4, 4).RegionMask() != mask.MaskBits(0xf0f0f0f000000000) {
+	if NewBoard(4, 4).RegionMask() != mask.Bits(0xf0f0f0f000000000) {
 	    t.Errorf("Wrong region mask for 5x5")
 	}
-	if NewBoard(8, 8).RegionMask() != mask.MaskBits(0xffffffffffffffff) {
+	if NewBoard(8, 8).RegionMask() != mask.Bits(0xffffffffffffffff) {
 	    t.Errorf("Wrong region mask for 8x8")
 	}
 }

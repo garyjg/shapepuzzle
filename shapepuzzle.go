@@ -1,5 +1,6 @@
 // -*- tab-width: 4; -*-
 
+// Package main for the shapepuzzle program.
 package main
 
 import (
@@ -14,6 +15,8 @@ import (
 // There are 8 permutations for every shape: flipped over or not, then
 // four rotations for each side up.
 
+// getShapes generates the shapes for a specific shape puzzle to be solved.
+//
 func getShapes() []shape.Shape {
 	grids := [][][]int { {
 			{1, 1, 0}, {1, 1, 1}}, {
@@ -30,10 +33,10 @@ func getShapes() []shape.Shape {
 	return shape.MakeShapes(grids)
 }
 
-type NullWriter struct {
+type _NullWriter struct {
 }
 
-func (nw NullWriter) Write(b []byte) (n int, err error) {
+func (nw _NullWriter) Write(b []byte) (n int, err error) {
     return len(b), nil
 }
 
@@ -45,14 +48,14 @@ func main() {
 	log.SetFlags(0)
 	
 	if ! logenable {
-		log.SetOutput(NullWriter{})
+		log.SetOutput(_NullWriter{})
 	}
 
 	b := board.NewBoard(8, 8)
 	shapes := getShapes()
 
 	nshapes := len(shapes)
-	for i := 0; i < nshapes; i += 1 {
+	for i := 0; i < nshapes; i++ {
 		s := &shapes[i]
 		perms := s.Permutations()
 		for _, p := range perms {
@@ -67,7 +70,7 @@ func main() {
 	for b := range bc {
 		fmt.Println("Solution found.")
 		fmt.Println(b)
-		nfound += 1
+		nfound++
 	}
 	if nfound == 0 {
 		fmt.Println("No solution found.")
