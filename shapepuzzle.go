@@ -5,12 +5,11 @@ package main
 
 import (
 	"fmt"
-	"shapepuzzle/shape"
-	"shapepuzzle/board"
 	"log"
 	"runtime"
+	"shapepuzzle/board"
+	"shapepuzzle/shape"
 )
-
 
 // There are 8 permutations for every shape: flipped over or not, then
 // four rotations for each side up.
@@ -18,18 +17,18 @@ import (
 // getShapes generates the shapes for a specific shape puzzle to be solved.
 //
 func getShapes() []shape.Shape {
-	grids := [][][]int { {
-			{1, 1, 0}, {1, 1, 1}}, {
-			{1, 0, 1}, {1, 1, 1}}, {
-			{1, 0, 0, 0, 0}, {1, 1, 1, 1, 1}}, {
-			{1, 1, 1, 1}, {1, 0, 0, 1}}, {
-			{1, 1, 1}, {1, 1, 1}, {0, 1, 1}}, {
-			{0, 1, 0}, {1, 1, 1}, {0, 1, 0}}, {
-			{0, 1, 0}, {0, 1, 0}, {1, 1, 1}}, {
-			{0, 0, 1, 1}, {1, 1, 1, 1}}, {
-			{0, 1, 1}, {1, 1, 0}, {1, 0, 0}}, {
-			{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 1, 1}}, {
-			{1, 0, 0, 0}, {1, 1, 1, 1}, {1, 0, 0, 0}}}
+	grids := [][][]int{{
+		{1, 1, 0}, {1, 1, 1}}, {
+		{1, 0, 1}, {1, 1, 1}}, {
+		{1, 0, 0, 0, 0}, {1, 1, 1, 1, 1}}, {
+		{1, 1, 1, 1}, {1, 0, 0, 1}}, {
+		{1, 1, 1}, {1, 1, 1}, {0, 1, 1}}, {
+		{0, 1, 0}, {1, 1, 1}, {0, 1, 0}}, {
+		{0, 1, 0}, {0, 1, 0}, {1, 1, 1}}, {
+		{0, 0, 1, 1}, {1, 1, 1, 1}}, {
+		{0, 1, 1}, {1, 1, 0}, {1, 0, 0}}, {
+		{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 1, 1}}, {
+		{1, 0, 0, 0}, {1, 1, 1, 1}, {1, 0, 0, 0}}}
 	return shape.MakeShapes(grids)
 }
 
@@ -37,7 +36,7 @@ type _NullWriter struct {
 }
 
 func (nw _NullWriter) Write(b []byte) (n int, err error) {
-    return len(b), nil
+	return len(b), nil
 }
 
 func main() {
@@ -46,8 +45,8 @@ func main() {
 
 	runtime.GOMAXPROCS(8)
 	log.SetFlags(0)
-	
-	if ! logenable {
+
+	if !logenable {
 		log.SetOutput(_NullWriter{})
 	}
 
@@ -75,8 +74,8 @@ func main() {
 	if nfound == 0 {
 		fmt.Println("No solution found.")
 	} else if nfound == 1 {
-	  	fmt.Println("One solution found.")
+		fmt.Println("One solution found.")
 	} else {
-	  	fmt.Println("%d solutions found.", nfound)
+		fmt.Println("%d solutions found.", nfound)
 	}
 }
