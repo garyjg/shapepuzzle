@@ -67,15 +67,15 @@ func main() {
 	bc := b.Solve(shapes)
 	nfound := 0
 	for b := range bc {
-		fmt.Println("Solution found.")
-		fmt.Println(b)
+		fmt.Printf("Solution found.\n")
+		fmt.Printf("%s\n", b)
 		nfound++
 	}
 	if nfound == 0 {
-		fmt.Println("No solution found.")
+		fmt.Printf("No solution found.\n")
 	} else if nfound == 1 {
-		fmt.Println("One solution found.")
+		fmt.Printf("One solution found.\n")
 	} else {
-		fmt.Println("%d solutions found.", nfound)
+		fmt.Printf("%d solutions found.\n", nfound)
 	}
 }
