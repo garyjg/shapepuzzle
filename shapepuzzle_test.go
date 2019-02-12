@@ -5,9 +5,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"shapepuzzle/board"
-	"shapepuzzle/shape"
 	"testing"
+
+	"github.com/garyjg/shapepuzzle/board"
+	"github.com/garyjg/shapepuzzle/shape"
 )
 
 func testShapes() []shape.Shape {

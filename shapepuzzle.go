@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"log"
 	"runtime"
-	"shapepuzzle/board"
-	"shapepuzzle/shape"
+
+	"github.com/garyjg/shapepuzzle/board"
+	"github.com/garyjg/shapepuzzle/shape"
 )
 
 // There are 8 permutations for every shape: flipped over or not, then
