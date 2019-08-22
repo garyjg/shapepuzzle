@@ -164,7 +164,7 @@ func FirstPlacements(s shape.Shape, b Board, bc Channel) {
 			for c := 0; c <= b.NumCols()/2 && c <= b.NumCols()-width; c++ {
 				place := p.Translate(r, c)
 				nb := b.Place(place)
-				if !RejectBoard(nb, rejects) {
+				if !rejectBoard(nb, rejects) {
 					log.Printf("Generating first placement (S#%d):\n%v",
 						place.ID(), nb)
 					bc <- nb
@@ -204,7 +204,7 @@ func NextPlacements(s shape.Shape, base Board, boards Channel,
 				// If this shape at this place on a blank board would be
 				// rejected, then reject it for any board.
 				nb := base.Place(place)
-				if !RejectBoard(nb, rejects) {
+				if !rejectBoard(nb, rejects) {
 					placements = append(placements, place)
 				} else {
 					log.Printf("Rejected prepared placement (S#%d):\n%v",
@@ -219,7 +219,7 @@ func NextPlacements(s shape.Shape, base Board, boards Channel,
 		for _, place := range placements {
 			if b.Mask()&place.Mask() == 0 {
 				nb := b.Place(place)
-				if !RejectBoard(nb, rejects) {
+				if !rejectBoard(nb, rejects) {
 					log.Printf("Generating placement (S#%d):\n%v", place.ID(), nb)
 					moves <- nb
 				}
@@ -262,7 +262,7 @@ func (b Board) Solve(shapes []shape.Shape) Channel {
 
 // See if the gap mask defined in this shape indicates that this board
 // state should be rejected as a possible solution.
-
+//
 func rejectGap(b Board, s shape.Shape) bool {
 
 	// First see if the board matches the gap outline.
@@ -284,13 +284,13 @@ func searchGap(b Board, patterns []shape.Shape) int {
 	return -1
 }
 
-func RejectBoard(b Board, patterns []shape.Shape) bool {
+func rejectBoard(b Board, patterns []shape.Shape) bool {
 	return searchGap(b, patterns) >= 0
 }
 
-// GapShapes, given a board with a particular size, generates all the masks
-// which if they match a board should cause the board to be rejected as a
-// potential solution.
+// GapShapes generates all the masks which if they match a board should cause
+// the board to be rejected as a potential solution, given a board with a
+// particular size.
 func GapShapes(b Board) []shape.Shape {
 
 	grids := [][][]int{{
