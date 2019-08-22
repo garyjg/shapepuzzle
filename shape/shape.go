@@ -84,25 +84,32 @@ func (s *Shape) ComputeMask() mask.Bits {
 	return s.mask
 }
 
-//
+// Clip clears all bits in the Shape which are not within the given region
+// mask.
 func (s Shape) Clip(region mask.Bits) Shape {
 	s.mask = s.mask & region
 	s.gaps = s.gaps & region
 	return s
 }
 
+// Mask returns the bit mask for the Shape.
 func (s Shape) Mask() mask.Bits {
 	return s.mask
 }
 
+// GapMask returns the bit mask for any gaps in the Shape.
 func (s Shape) GapMask() mask.Bits {
 	return s.gaps
 }
 
+// OutlineMask returns a mask with only the bits of Shape which are not part
+// of the gap mask.
 func (s Shape) OutlineMask() mask.Bits {
 	return s.mask & (^s.gaps)
 }
 
+// Translate moves the Shape by rows r and columns c, then recomputes the
+// mask and gaps for the new location.
 func (s Shape) Translate(r int, c int) Shape {
 	s.row = s.row + r
 	s.col = s.col + c
@@ -116,22 +123,25 @@ func (s Shape) rotate() Shape {
 	nrow := s.NumCols()
 	ncol := s.NumRows()
 	grid := make([][]int, nrow)
-	for r := 0; r < nrow; r += 1 {
+	for r := 0; r < nrow; r++ {
 		grid[r] = make([]int, ncol)
-		for c := 0; c < ncol; c += 1 {
+		for c := 0; c < ncol; c++ {
 			grid[r][c] = s.shape[ncol-c-1][r]
 		}
 	}
 	return NewShape(s.id, grid)
 }
 
+// Equals compares the Shape with the Shape b and returns true if the sizes
+// of the Shapes are the same and all of their grid values match.  So both
+// mask and gap grid points must be the same.
 func (s Shape) Equals(b Shape) bool {
 	nrow := s.NumRows()
 	ncol := s.NumCols()
 	result := (nrow == b.NumRows() && ncol == b.NumCols())
 	if result {
-		for r := 0; r < nrow; r += 1 {
-			for c := 0; c < ncol; c += 1 {
+		for r := 0; r < nrow; r++ {
+			for c := 0; c < ncol; c++ {
 				result = result && (s.shape[r][c] == b.shape[r][c])
 			}
 		}
@@ -144,9 +154,9 @@ func (s Shape) flip() Shape {
 	nrow := s.NumRows()
 	ncol := s.NumCols()
 	grid := make([][]int, nrow)
-	for r := 0; r < nrow; r += 1 {
+	for r := 0; r < nrow; r++ {
 		grid[r] = make([]int, ncol)
-		for c := 0; c < ncol; c += 1 {
+		for c := 0; c < ncol; c++ {
 			grid[r][c] = s.shape[nrow-r-1][c]
 		}
 	}
@@ -162,9 +172,11 @@ func searchShapes(shapes []Shape, pred func(s Shape) bool) (bool, int) {
 	return false, 0
 }
 
+// Permutations returns all distinct Shapes generated from rotating Shape
+// and flipping Shape all possible ways.
 func (s Shape) Permutations() []Shape {
 	shapes := []Shape{}
-	for i := 0; i < 8; i += 1 {
+	for i := 0; i < 8; i++ {
 		if i == 4 {
 			s = s.flip()
 		}
