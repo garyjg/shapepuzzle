@@ -445,7 +445,6 @@ func TestShape_Equals(t *testing.T) {
 		{"bracket equals bracket", fields{1, bracket}, args{NewShape(2, bracket)}, true},
 		{"bracket == flipped bracket", fields{1, bracket}, args{NewShape(2, bracket).flip()}, true},
 		{"bracket != rotated bracket", fields{1, bracket}, args{NewShape(2, bracket).rotate()}, false},
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -517,31 +516,22 @@ func Test_searchShapes(t *testing.T) {
 }
 
 func TestShape_Permutations(t *testing.T) {
-	type fields struct {
-		id    int
-		shape [][]int
-		mask  mask.Bits
-		gaps  mask.Bits
-		row   int
-		col   int
-	}
+
+	cross := NewShape(1, [][]int{{0, 1, 0}, {1, 1, 1}, {0, 1, 0}})
+	bracket := NewShape(2, [][]int{{1, 1}, {1, 0}, {1, 1}})
+
 	tests := []struct {
-		name   string
-		fields fields
-		want   []Shape
+		name  string
+		shape Shape
+		want  []Shape
 	}{
+		{"one cross permutation", cross, []Shape{cross}},
+		{"four brackets", bracket, []Shape{bracket, bracket.rotate(), bracket.rotate().rotate(), bracket.rotate().rotate().rotate()}},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Shape{
-				id:    tt.fields.id,
-				shape: tt.fields.shape,
-				mask:  tt.fields.mask,
-				gaps:  tt.fields.gaps,
-				row:   tt.fields.row,
-				col:   tt.fields.col,
-			}
+			s := tt.shape
 			if got := s.Permutations(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Shape.Permutations() = %v, want %v", got, tt.want)
 			}
