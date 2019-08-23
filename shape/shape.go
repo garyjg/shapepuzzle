@@ -139,12 +139,10 @@ func (s Shape) Equals(b Shape) bool {
 	nrow := s.NumRows()
 	ncol := s.NumCols()
 	result := (nrow == b.NumRows() && ncol == b.NumCols())
-	if result {
-		for r := 0; r < nrow; r++ {
-			for c := 0; c < ncol; c++ {
-				result = result && (s.shape[r][c] == b.shape[r][c])
-			}
-		}
+	for i := 0; i < nrow*ncol && result; i++ {
+		r := i / ncol
+		c := i % ncol
+		result = result && (s.shape[r][c] == b.shape[r][c])
 	}
 	// fmt.Println("comparing %v == %v ==> %v", s, b, result)
 	return result
