@@ -57,7 +57,6 @@ func (mask Bits) Translate(row int, col int) Bits {
 
 	if row < 0 {
 		mask = mask << uint(-row*8)
-		row = 0
 	} else {
 		mask = mask >> uint(row*8)
 	}
