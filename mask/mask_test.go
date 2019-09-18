@@ -16,6 +16,24 @@ func testTranslate(t *testing.T, start Bits, r int, c int,
 	}
 }
 
+func TestString(t *testing.T) {
+	type stringTest struct {
+		bits Bits
+		text string
+	}
+	tests := []stringTest{
+		{Bits(0xffffffffffffffff), "0xffffffffffffffff"},
+		{Bits(0x1), "0x0000000000000001"},
+		{Bits(0x8000000000000000), "0x8000000000000000"},
+	}
+	for _, test := range tests {
+		got := test.bits.String()
+		if got != test.text {
+			t.Errorf("got Bits string %s, expected %s", got, test.text)
+		}
+	}
+}
+
 func TestMaskEqual(t *testing.T) {
 	all := Bits(0xffffffffffffffff)
 	testTranslate(t, all, 0, 0, all, "zero translate should be the same")
