@@ -5,8 +5,10 @@ interlocking 2D shapes must be placed to fill a square board.
 
 ## Data model
 
-The shapes are defined as arrays of bitmasks which can be rotated and
-flipped and placed on the board by OR'ing the bits.  Each byte is one row on the board, and each bit is a column.  So any board size up to 8x8 can fit into an unsigned long integer, but the board size for this particular puzzle is 8x8.
+The shapes are defined as arrays of bitmasks which can be rotated and flipped
+and placed on the board by OR'ing the bits.  Each byte is one row on the
+board, and each bit is a column.  So any board size up to 8x8 can fit into an
+unsigned long integer, but the board size for this particular puzzle is 8x8.
 
 For example, this grid:
 
@@ -16,9 +18,9 @@ For example, this grid:
 
 describes a shape like this:
 
-<table>
-<tr><td height='30p' width='30p' bgcolor='black'><td height='30p' width='30p' bgcolor='black'><td height='30p' width='30p'>
-<tr><td height='30p' width='30p' bgcolor='black'><td height='30p' width='30p' bgcolor='black'><td height='30p' width='30p' bgcolor='black'>
+<table style='width: 120p; height: 80p;'>
+<tr><td bgcolor='black'/><td bgcolor='black'/><td bgcolor='white'/></tr>
+<tr><td bgcolor='black'/><td bgcolor='black'/><td bgcolor='black'/></tr>
 </table>
 
 ## Algorithm

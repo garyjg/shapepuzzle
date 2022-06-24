@@ -2,3 +2,6 @@
 board/cover.out
 cover.out
 shapepuzzle
+idir
+template-*-config-*
+configure-log.txt
